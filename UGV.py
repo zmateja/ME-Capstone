@@ -1,6 +1,6 @@
 
 #   UGV Complete Code V1.0
-#   Jonathan Nikolaidis
+#   Jonathan Nikolaidis and Zach Mateja
 #   Villanova University HAV Lab
 #   01/29/19
 #   UGV/QUAD V1
