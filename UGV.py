@@ -203,51 +203,66 @@ else:
 #Motor Input Saturation Filter
 #PWM signals range from 0 to 255 so we saturate our motor controller output to accomodate that.
 #We account for the negative PWM values using the if/else cases below.
+	
+#range is from 0 to 100 for Python's duty cycle
 if PWM_controller_L > 255:
-	PWM_controller_L = 255
+	PWM_controller_L = 100
 
 if PWM_controller_L < -255:
-	PWM_controller_L = -255
+	PWM_controller_L = -100
+
+if -255 <= PWM_controller_L <= 255
+	PWM_controller_L = (PWM_controller_L/255)*100
 
 if PWM_controller_R > 255: 
-	PWM_controller_R = 255
+	PWM_controller_R = 100
 
 if PWM_controller_R < -255:
-	PWM_controller_R = -255
+	PWM_controller_R  = 100
+	
+if -255 <= PWM_controller_R <= 255
+	PWM_controller_R = (PWM_controller_R/255)*100
 
 
 #Left Motor Commands
 #If desired motor speed (from the Pi) is given as a zero, we are going to bypass the PI controller.
 #The PI controller will constantly try to apply current to the motor if we don't do this which will
 #1) waste power and 2) make an annoying high-pitch noise.
+#https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/
+#p1 =GPIO.PWM(channel(10), frequency)
+#p2 =GPIO.PWM(channel(3), frequency)
+#p3 =GPIO.PWM(channel(9), frequency)
+#p4 =GPIO.PWM(channel(5), frequency)
+	
+	
 if MOTOR_L == 0:
-	analogWrite(10, 0)
-	analogWrite(3, 0)
+	analogWrite(10, 0) #p1.start(0) 
+	analogWrite(3, 0) #p2.start(0)
 else:
 	if PWM_controller_L > 0:
-		analogWrite(10, 0)
-		analogWrite(3, abs(PWM_controller_L))
+		analogWrite(10, 0) #p1.start(0)
+		analogWrite(3, abs(PWM_controller_L)) #p1.start(abs(PWM_controller_L))
 	elif PWM_controller_L == 0:
-		analogWrite(10, 0)
-		analogWrite(3, 0)
+		analogWrite(10, 0)#p1.start(0)
+		analogWrite(3, 0)#p2.start(0)
 	elif PWM_controller_L < 0:
-		analogWrite(3, 0)
-		analogWrite(10, abs(PWM_controller_L))
+		analogWrite(3, 0)#p2.start(0)
+		analogWrite(10, abs(PWM_controller_L))#p2.start(abs(PWM_controller_L))
 
 #Right Motor Commands
 if MOTOR_R == 0:
-	analogWrite(9, 0)
-	analogWrite(5, 0)
+	analogWrite(9, 0)#p3.start(0)
+	analogWrite(5, 0)#p4.start(0)
 else:
 	if PWM_controller_R > 0:
-		analogWrite(9, 0)
-		analogWrite(5, abs(PWM_controller_R))
+		analogWrite(9, 0)#p3.start(0)
+		analogWrite(5, abs(PWM_controller_R))#p4.start(abs(PWM_controller_R))
 	elif PWM_controller_R == 0:
-		analogWrite(9, 0)
-		analogWrite(5, 0)
+		analogWrite(9, 0)#p3.start(0)
+		analogWrite(5, 0)#p4.start(0)
 	elif PWM_controller_R < 0:
-		analogWrite(5, 0)
-		analogWrite(9, abs(PWM_controller_R))
+		analogWrite(5, 0)#p4.start(0)
+		analogWrite(9, abs(PWM_controller_R))#p3.start(abs(PWM_controller_R))
 
 #***********************************************************************************************************
 #                                         Timer Interrupt Function Finish
