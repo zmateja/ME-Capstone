@@ -1,4 +1,3 @@
-
 #   UGV Complete Code V1.0
 #   Jonathan Nikolaidis and Zach Mateja
 #   Villanova University HAV Lab
@@ -244,7 +243,7 @@ if -255 <= PWM_controller_R <= 255
 #The PI controller will constantly try to apply current to the motor if we don't do this which will
 #1) waste power and 2) make an annoying high-pitch noise.
 #https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/
-p1 =GPIO.PWM(channel(10), frequency)
+p1 =GPIO.PWM(channel(10), frequency) # change channel(10) to the correct pin
 p2 =GPIO.PWM(channel(3), frequency)
 p3 =GPIO.PWM(channel(9), frequency)
 p4 =GPIO.PWM(channel(5), frequency)
