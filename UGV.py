@@ -244,40 +244,40 @@ if -255 <= PWM_controller_R <= 255
 #The PI controller will constantly try to apply current to the motor if we don't do this which will
 #1) waste power and 2) make an annoying high-pitch noise.
 #https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/
-#p1 =GPIO.PWM(channel(10), frequency)
-#p2 =GPIO.PWM(channel(3), frequency)
-#p3 =GPIO.PWM(channel(9), frequency)
-#p4 =GPIO.PWM(channel(5), frequency)
+p1 =GPIO.PWM(channel(10), frequency)
+p2 =GPIO.PWM(channel(3), frequency)
+p3 =GPIO.PWM(channel(9), frequency)
+p4 =GPIO.PWM(channel(5), frequency)
 	
 	
 if MOTOR_L == 0:
-	analogWrite(10, 0) #p1.start(0) 
-	analogWrite(3, 0) #p2.start(0)
+	p1.start(0) 
+	p2.start(0)
 else:
 	if PWM_controller_L > 0:
-		analogWrite(10, 0) #p1.start(0)
-		analogWrite(3, abs(PWM_controller_L)) #p1.start(abs(PWM_controller_L))
+		p1.start(0)
+		p1.start(abs(PWM_controller_L))
 	elif PWM_controller_L == 0:
-		analogWrite(10, 0)#p1.start(0)
-		analogWrite(3, 0)#p2.start(0)
+		p1.start(0)
+		p2.start(0)
 	elif PWM_controller_L < 0:
-		analogWrite(3, 0)#p2.start(0)
-		analogWrite(10, abs(PWM_controller_L))#p2.start(abs(PWM_controller_L))
+		p2.start(0)
+		p2.start(abs(PWM_controller_L))
 
 #Right Motor Commands
 if MOTOR_R == 0:
-	analogWrite(9, 0)#p3.start(0)
-	analogWrite(5, 0)#p4.start(0)
+	p3.start(0)
+	p4.start(0)
 else:
 	if PWM_controller_R > 0:
-		analogWrite(9, 0)#p3.start(0)
-		analogWrite(5, abs(PWM_controller_R))#p4.start(abs(PWM_controller_R))
+		p3.start(0)
+		p4.start(abs(PWM_controller_R))
 	elif PWM_controller_R == 0:
-		analogWrite(9, 0)#p3.start(0)
-		analogWrite(5, 0)#p4.start(0)
+		p3.start(0)
+		p4.start(0)
 	elif PWM_controller_R < 0:
-		analogWrite(5, 0)#p4.start(0)
-		analogWrite(9, abs(PWM_controller_R))#p3.start(abs(PWM_controller_R))
+		p4.start(0)
+		p3.start(abs(PWM_controller_R))
 
 #***********************************************************************************************************
 #                                         Timer Interrupt Function Finish
