@@ -47,6 +47,11 @@ void setup()
   pmc_set_writeprotect(false);     # disable write protection for pmc registers
   pmc_enable_periph_clk(ID_TC1);   # enable peripheral clock TC1
 
+#Python Code 
+#GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+	#or 
+#GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+	
 # we want wavesel 01 with RC 
 #TC_Configure(clock ,channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
   TC_Configure(TC0,1, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
