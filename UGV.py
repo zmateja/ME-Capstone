@@ -46,6 +46,7 @@ AUX2 = 0
 # ***********************************************************************************************************
 #                                        Timer Interrupt Setup Start
 # ***********************************************************************************************************
+
 # turn on the timer clock in the power management controller https://forum.arduino.cc/index.php?topic=130423.15
 pmc_set_writeprotect(false) # disable write protection for pmc registers
 pmc_enable_periph_clk(ID_TC1)  # enable peripheral clock TC1
@@ -153,130 +154,132 @@ void loop()
 #                                         Timer Interrupt Function Start
 #*********************************************************************************************************** 
 # This part of the code will execute at the frequency selected in the timer interrupt setup
-void TC1_Handler()
-{
-TC_GetStatus(TC0, 1);
 
-if AUX1 == 1:                              #If vehicle is e-stopped, reset all of the counters and errors
-	counter_L = 0
-	lastcounter_L = 0
-	e_L = 0
-	e_sum_L = 0
-	MOTOR_L=0
+def tc1_handler:
+	TC_GetStatus(TC0, 1);
 
-	counter_R = 0
-	lastcounter_R = 0
-	e_R = 0
-	e_sum_R = 0
-	MOTOR_R=0
-break
+	if AUX1 == 1:                              #If vehicle is e-stopped, reset all of the counters and errors
+		counter_L = 0
+		lastcounter_L = 0
+		e_L = 0
+		e_sum_L = 0
+		MOTOR_L=0
 
-#Calculate Left RPM
-Dcounter_L = counter_L - lastcounter_L
-RPM_L = Dcounter_L * 3.0/ 4          #  500hz / 400 clicks per second / 50 gear ratio * 60 seconds
-lastcounter_L = counter_L
+		counter_R = 0
+		lastcounter_R = 0
+		e_R = 0
+		e_sum_R = 0
+		MOTOR_R=0
+	break
 
-#Calculate Right RPM
-Dcounter_R = counter_R - lastcounter_R
-RPM_R = Dcounter_R * 3.0/ 4          #  500hz / 400 clicks per second / 50 gear ratio * 60 seconds
-lastcounter_R = counter_R
+	#Calculate Left RPM
+	Dcounter_L = counter_L - lastcounter_L
+	RPM_L = Dcounter_L * 3.0/ 4          #  500hz / 400 clicks per second / 50 gear ratio * 60 seconds
+	lastcounter_L = counter_L
 
-#PI Controller Left
-#The integral saturation filters makes sure our error sum doesn't go off to infinity if our wheels get stuck on something.
-e_L = MOTOR_L - RPM_L
-e_sum_L = e_sum_L + e_L
-if e_sum_L > 5000:
-	e_sum_L = 5000 # Integral Saturation Filter
+	#Calculate Right RPM
+	Dcounter_R = counter_R - lastcounter_R
+	RPM_R = Dcounter_R * 3.0/ 4          #  500hz / 400 clicks per second / 50 gear ratio * 60 seconds
+	lastcounter_R = counter_R
 
-if e_sum_L < -5000: 
-	e_sum_L = -5000
+	#PI Controller Left
+	#The integral saturation filters makes sure our error sum doesn't go off to infinity if our wheels get stuck on something.
+	e_L = MOTOR_L - RPM_L
+	e_sum_L = e_sum_L + e_L
+	if e_sum_L > 5000:
+		e_sum_L = 5000 # Integral Saturation Filter
 
-RPM_controller_L = Kp * e_L + Ki * e_sum_L
+	if e_sum_L < -5000:
+		e_sum_L = -5000
 
-if RPM_controller_L > 0:
-	PWM_controller_L = (0.0099 * RPM_controller_L*RPM_controller_L - 0.1735*RPM_controller_L)*(7.2/12)
-else:
-	PWM_controller_L = (-0.0099 * RPM_controller_L*RPM_controller_L  - 0.1735*RPM_controller_L)*(7.2/12)
+	RPM_controller_L = Kp * e_L + Ki * e_sum_L
 
-#PI Controller Right
-e_R = MOTOR_R - RPM_R
-e_sum_R = e_sum_R + e_R
-if e_sum_R > 5000:
-	e_sum_R = 5000 # Integral Saturation Filter
+	if RPM_controller_L > 0:
+		PWM_controller_L = (0.0099 * RPM_controller_L*RPM_controller_L - 0.1735*RPM_controller_L)*(7.2/12)
+	else:
+		PWM_controller_L = (-0.0099 * RPM_controller_L*RPM_controller_L  - 0.1735*RPM_controller_L)*(7.2/12)
 
-if e_sum_R < -5000:
-	e_sum_R = -5000
+	#PI Controller Right
+	e_R = MOTOR_R - RPM_R
+	e_sum_R = e_sum_R + e_R
+	if e_sum_R > 5000:
+		e_sum_R = 5000 # Integral Saturation Filter
 
-RPM_controller_R = Kp * e_R + Ki * e_sum_R
+	if e_sum_R < -5000:
+		e_sum_R = -5000
 
-if RPM_controller_R > 0:
-	PWM_controller_R = (0.0099 * RPM_controller_R*RPM_controller_R - 0.1735*RPM_controller_R)*(7.2/12)
-else:
-	PWM_controller_R = (-0.0099 * RPM_controller_R*RPM_controller_R - 0.1735*RPM_controller_R)*(7.2/12)
+	RPM_controller_R = Kp * e_R + Ki * e_sum_R
 
-#Motor Input Saturation Filter
-#PWM signals range from 0 to 255 so we saturate our motor controller output to accomodate that.
-#We account for the negative PWM values using the if/else cases below.
-	
-#range is from 0 to 100 for Python's duty cycle
-if PWM_controller_L > 255:
-	PWM_controller_L = 100
+	if RPM_controller_R > 0:
+		PWM_controller_R = (0.0099 * RPM_controller_R*RPM_controller_R - 0.1735*RPM_controller_R)*(7.2/12)
+	else:
+		PWM_controller_R = (-0.0099 * RPM_controller_R*RPM_controller_R - 0.1735*RPM_controller_R)*(7.2/12)
 
-if PWM_controller_L < -255:
-	PWM_controller_L = -100
+	#Motor Input Saturation Filter
+	#PWM signals range from 0 to 255 so we saturate our motor controller output to accomodate that.
+	#We account for the negative PWM values using the if/else cases below.
 
-if -255 <= PWM_controller_L <= 255
-	PWM_controller_L = (PWM_controller_L/255)*100
+	#range is from 0 to 100 for Python's duty cycle
+	if PWM_controller_L > 255:
+		PWM_controller_L = 100
 
-if PWM_controller_R > 255: 
-	PWM_controller_R = 100
+	if PWM_controller_L < -255:
+		PWM_controller_L = -100
 
-if PWM_controller_R < -255:
-	PWM_controller_R  = 100
-	
-if -255 <= PWM_controller_R <= 255
-	PWM_controller_R = (PWM_controller_R/255)*100
+	if -255 <= PWM_controller_L <= 255
+		PWM_controller_L = (PWM_controller_L/255)*100
+
+	if PWM_controller_R > 255:
+		PWM_controller_R = 100
+
+	if PWM_controller_R < -255:
+		PWM_controller_R  = 100
+
+	if -255 <= PWM_controller_R <= 255
+		PWM_controller_R = (PWM_controller_R/255)*100
 
 
-#Left Motor Commands
-#If desired motor speed (from the Pi) is given as a zero, we are going to bypass the PI controller.
-#The PI controller will constantly try to apply current to the motor if we don't do this which will
-#1) waste power and 2) make an annoying high-pitch noise.
-#https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/
-p1 =GPIO.PWM(channel(10), frequency) # change channel(10) to the correct pin
-p2 =GPIO.PWM(channel(3), frequency)
-p3 =GPIO.PWM(channel(9), frequency)
-p4 =GPIO.PWM(channel(5), frequency)
-	
-	
-if MOTOR_L == 0:
-	p1.start(0) 
-	p2.start(0)
-else:
-	if PWM_controller_L > 0:
-		p1.start(0)
-		p1.start(abs(PWM_controller_L))
-	elif PWM_controller_L == 0:
+	#Left Motor Commands
+	#If desired motor speed (from the Pi) is given as a zero, we are going to bypass the PI controller.
+	#The PI controller will constantly try to apply current to the motor if we don't do this which will
+	#1) waste power and 2) make an annoying high-pitch noise.
+	#https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/
+	p1 =GPIO.PWM(channel(10), frequency) # change channel(10) to the correct pin
+	p2 =GPIO.PWM(channel(3), frequency)
+	p3 =GPIO.PWM(channel(9), frequency)
+	p4 =GPIO.PWM(channel(5), frequency)
+
+
+	if MOTOR_L == 0:
 		p1.start(0)
 		p2.start(0)
-	elif PWM_controller_L < 0:
-		p2.start(0)
-		p2.start(abs(PWM_controller_L))
+	else:
+		if PWM_controller_L > 0:
+			p1.start(0)
+			p1.start(abs(PWM_controller_L))
+		elif PWM_controller_L == 0:
+			p1.start(0)
+			p2.start(0)
+		elif PWM_controller_L < 0:
+			p2.start(0)
+			p2.start(abs(PWM_controller_L))
 
-#Right Motor Commands
-if MOTOR_R == 0:
-	p3.start(0)
-	p4.start(0)
-else:
-	if PWM_controller_R > 0:
-		p3.start(0)
-		p4.start(abs(PWM_controller_R))
-	elif PWM_controller_R == 0:
+	#Right Motor Commands
+	if MOTOR_R == 0:
 		p3.start(0)
 		p4.start(0)
-	elif PWM_controller_R < 0:
-		p4.start(0)
-		p3.start(abs(PWM_controller_R))
+	else:
+		if PWM_controller_R > 0:
+			p3.start(0)
+			p4.start(abs(PWM_controller_R))
+		elif PWM_controller_R == 0:
+			p3.start(0)
+			p4.start(0)
+		elif PWM_controller_R < 0:
+			p4.start(0)
+			p3.start(abs(PWM_controller_R))
+	print(time.ctime())
+	threading.Timer(.004, tc1_handler).start()
 
 #***********************************************************************************************************
 #                                         Timer Interrupt Function Finish
