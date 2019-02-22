@@ -256,13 +256,13 @@ def tc1_handler:
 	else:
 		if PWM_controller_L > 0:
 			p1.start(0)
-			p1.start(abs(PWM_controller_L))
+			p2.start(abs(PWM_controller_L))
 		elif PWM_controller_L == 0:
 			p1.start(0)
 			p2.start(0)
 		elif PWM_controller_L < 0:
 			p2.start(0)
-			p2.start(abs(PWM_controller_L))
+			p1.start(abs(PWM_controller_L))
 
 	#Right Motor Commands
 	if MOTOR_R == 0:
