@@ -47,26 +47,7 @@ AUX2 = 0
 #                                        Timer Interrupt Setup Start
 # ***********************************************************************************************************
 
-# turn on the timer clock in the power management controller https://forum.arduino.cc/index.php?topic=130423.15
-pmc_set_writeprotect(false) # disable write protection for pmc registers
-pmc_enable_periph_clk(ID_TC1)  # enable peripheral clock TC1
 
-# we want wavesel 01 with RC
-# TC_Configure(clock ,channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
-TC_Configure(TC0, 1, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4)
-#  TC_SetRC(TC2, 1, 656000);
-#  TC_SetRC(TC0, 1, 13120);                  # 50Hz
-#  TC_SetRC(TC0, 1, 6560);                  # 100Hz
-TC_SetRC(TC0, 1, 2624)  # 250Hz
-TC_Start(TC0, 1)
-
-# enable timer interrupts on the timer
-#TC0->TC_CHANNEL[1].TC_IER = TC_IER_CPCS  # IER = interrupt enable register
-#TC0->TC_CHANNEL[1].TC_IDR = ~TC_IER_CPCS  # IDR = interrupt disable register
-
-# Enable the interrupt in the nested vector interrupt controller
-# TC4_IRQn where 4 is the timer number * timer channels (3) + the channel number (=(1*3)+1) for timer1 channel1
-NVIC_EnableIRQ(TC1_IRQn)
 # ***********************************************************************************************************
 #                                          Timer Interrupt Setup End
 # ***********************************************************************************************************
